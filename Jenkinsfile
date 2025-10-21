@@ -20,7 +20,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                sh 'index.html'
                 // Add your deploy script here, e.g.:
                 // sh './deploy.sh'
             }
