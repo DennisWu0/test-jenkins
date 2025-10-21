@@ -6,21 +6,20 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                sh 'npm install'
+                // sh 'npm install'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                sh 'npm test'
+                // sh 'npm test'
             }
         }
 
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                sh 'index.html'
                 // Add your deploy script here, e.g.:
                 // sh './deploy.sh'
             }

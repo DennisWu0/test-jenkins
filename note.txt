@@ -1,2 +1,5 @@
 Hi!
+<<<<<<< HEAD
 This is telling you Im ready for the next step 
+=======
+>>>>>>> 0e48cace5cfeb3c33fe30e5cdf09110b49ae4ba7
