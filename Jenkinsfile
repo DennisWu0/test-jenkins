@@ -1,37 +1,78 @@
 pipeline {
     agent any
 
+    environment {
+        APP_NAME = "simple-web"
+        IMAGE_NAME = "my-simple-web"
+        CONTAINER_NAME = "my-simple-web"
+        DOCKER_PORT = "7070"
+    }
+
+    options {
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+
+    triggers {
+        // Auto-trigger build when pushing to main branch
+        pollSCM('H/5 * * * *')
+    }
     stages {
 
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                echo 'Building the project...'
-                // sh 'npm install'
+                echo "📥 Checking out code..."
+                checkout scm
             }
         }
 
-        stage('Test') {
+        stage('Build Docker Image') {
             steps {
-                echo 'Running tests...'
-                // sh 'npm test'
+                echo "🏗️ Building Docker image..."
+                sh "docker build -t ${IMAGE_NAME} ."
             }
         }
 
-        stage('Deploy') {
+        stage('Stop Old Container') {
             steps {
-                echo 'Deploying application...'
-                // Add your deploy script here, e.g.:
-                // sh './deploy.sh'
+                echo "🛑 Stopping old container (if exists)..."
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
+            }
+        }
+
+        stage('Run New Container') {
+            steps {
+                echo "🚀 Running new container..."
+                sh "docker run -d --name ${CONTAINER_NAME} -p ${DOCKER_PORT}:80 ${IMAGE_NAME}"
+            }
+        }
+
+        stage('Test Deployment') {
+            steps {
+                echo "🔍 Checking if container is running..."
+                sh "docker ps | grep ${CONTAINER_NAME}"
             }
         }
     }
 
     post {
         success {
-            echo '✅ Build succeeded!'
+            echo "✅ Deployment succeeded! Visit: http://192.168.0.143:${DOCKER_PORT}"
+            script {
+                currentBuild.description = "✅ Docker deployment success"
+            }
         }
         failure {
-            echo '❌ Build failed!'
+            echo "❌ Deployment failed!"
+            script {
+                currentBuild.description = "❌ Docker deployment failed"
+            }
+        }
+        always {
+            echo "🧹 Cleaning workspace..."
+            cleanWs()
         }
     }
 }
